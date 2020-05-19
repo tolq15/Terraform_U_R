@@ -35,3 +35,6 @@ resource "aws_security_group" "lt_sg_01" {
   }
 }
 
+output "public_ip_addresses" {
+  value = "${aws_instance.lt-instance.*.public_ip}"
+}
