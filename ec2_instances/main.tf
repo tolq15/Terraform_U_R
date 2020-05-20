@@ -25,7 +25,7 @@ tags = {
 
 resource "aws_security_group" "lt_sg_01" {
 
-  name = "U_R_01_sg"
+  name   = "U_R_01_sg"
 
   ingress {
     from_port   = var.server_port
@@ -35,11 +35,46 @@ resource "aws_security_group" "lt_sg_01" {
   }
 }
 
+
+resource "aws_vpc" "default" {
+  cidr_block = "10.1.0.0/16"
+}
+
+#resource "aws_nat_gateway" "default" {
+#  subnet_id = aws_subnet.public.id
+#}
+
+resource "aws_subnet" "public" {
+  vpc_id            = aws_vpc.default.id
+  cidr_block        = aws_vpc.default.cidr_block
+}
+
+#Adding Elastic IP for NAT gateway
+
+resource "aws_eip" "test_eip" {
+  vpc = true
+}
+
+#Adding NAT Gateway
+
+resource "aws_nat_gateway" "test_nat_gw" {
+  allocation_id = aws_eip.test_eip.id
+  subnet_id     = aws_subnet.public.id
+
+  tags = {
+    Name = "gw NAT"
+  }
+}
+
 output "public_ip_addresses" {
   value = "${aws_instance.lt-instance.*.public_ip}"
 }
 
 output "public_DNS" {
   value = "${aws_instance.lt-instance.*.public_dns}"
+}
+
+output "privat_ip_addresses" {
+  value = "${aws_instance.lt-instance.*.private_ip}"
 }
 
